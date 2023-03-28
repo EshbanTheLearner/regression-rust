@@ -13,6 +13,12 @@ use rand::seq::SliceRandom;
 
 use ml_utils::datasets::get_boston_records_from_file;
 
+use rusty_machine;
+use rusty_machine::linalg::Matrix;
+use rusty_machine::linalg::Vector;
+use rusty_machine::learning::lin_reg::LinRegressor;
+use rusty_machine::analysis::score::neg_mean_squared_error;
+
 pub fn run() -> Result<(), Box<dyn Error>> {
     let fl = "data/BostonHousing.csv";
     let mut data = get_boston_records_from_file(&fl);
@@ -41,4 +47,21 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let boston_y_test: Vec<f64> = test_data.iter()
         .map(|r| r.into_targets())
         .collect();
+
+    let boston_x_train = Matrix::new(train_size, 13, boston_x_train);
+    let boston_y_train = Vector::new(boston_y_train);
+    let boston_x_test = Matrix::new(test_size, 13, boston_x_test);
+    let boston_y_test = Vector::new(test_size, 1, boston_y_test);
+
+    let mut lin_model = LinRegressor::default();
+    println!("{:?}", lin_model);
+
+    lin_model.train(&boston_x_train, &boston_y_train);
+
+    let predictions = lin_model.predict(&boston_x_test).unwrap();
+    let predictions = Matrix::new(test_size, 1, predictions);
+    let error_ = neg_mean_squared_error(&predictions, &boston_y_test);
+    println!("Linear Regression Error: {:?}", error_);
+    
+    OK(())
 }
