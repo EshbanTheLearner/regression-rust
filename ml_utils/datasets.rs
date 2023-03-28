@@ -1,3 +1,10 @@
+use std::io::prelude::*;
+use std::io::BufReader;
+use std::path::Path;
+use std::fs::File;
+use std::vec::Vec;
+
+#[derive(Debug, Deserialize)]
 pub struct BostonHousing {
     crim: f64, zn: f64, indus: f64, chas: f64, nox: f64,
     rm: f64, age: f64, dis: f64, rad: f64, tax: f64,
@@ -28,5 +35,22 @@ impl BostonHousing {
 
     pub fn into_targets(&self) -> f64 {
         self.mdev
+    }
+
+    fn get_boston_record(s: String) -> BostonHousing {
+        let v: Vec<&str> = s.split_whitespace().collect();
+        let b: BostonHousing = BostonHousing::new(v);
+        b
+    }
+
+    fn get_boston_records_from_file(fl: impl AsRef<Path>) -> Vec<BostonHousing> {
+        let file = File::open(fl).expect("No Such File");
+        let buf = BufReader::new(file);
+        buf.lines().enumerate()
+            .map(|(n, 1)| l.expect(
+                &format!("Could not parse line no {}", n)
+            ))
+            .map(|r| get_boston_record(r))
+            .collect()
     }
 }
